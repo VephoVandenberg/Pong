@@ -5,7 +5,7 @@
 
 #include <GLFW/glfw3.h>
 
-const unsigned int screen_width = 600;
+const unsigned int screen_width = 800;
 const unsigned int screen_height = 500;
 
 // variables to move bars
@@ -17,13 +17,18 @@ static float move_dir_right = 0.0f;
 
 // variables for movement of ball
 static float movementX = 0.2f;
-static float movementY = 0.0f;
+static float movementY = -0.1f;
 
 static float move_dirX = 0.0f;
 static float move_dirY = 0.0f;
 
 static bool signX;
 static bool signY;
+
+static bool left_center;
+static bool right_center;
+
+static float velocity = 0.01f;
 
 void key_callback(GLFWwindow *window,
 		  int key,
@@ -193,59 +198,113 @@ int main(int argc, char **argv)
 	trans_right = glm::translate(trans_right, glm::vec3(0.95f, movement_right, 0.0f));
 	player_shader_handler.set_matrix("transform", trans_right);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-// Ball movement and collision
+// Ball's movement
 	ball_shader_handler.use();
 	glBindVertexArray(VAOs[1]);
 
 	
 	glm::mat4 movement;
 
-	if (movementX + move_dirX + 0.04f >= 1.0f)
+	if (movementX + 0.02f >= 1.0f)
 	{
-	    movementX = 1.0f - 0.041f;
+	    movementX = 0.0f;
 	    signX = false;
 	}
-	else if (movementX - move_dirX - 0.04f <= -1.0f)
+	else if (movementX - 0.02f <= -1.0f)
 	{
-	    movementX = 1.0f + 0.041f;
+	    movementX = 0.0f;
 	    signX = true;
 	}
 	else
 	{
 	    if (signX)
 	    {
-		move_dirX += 0.001f;
+		movementX += 0.02f;
 	    }
 	    else
 	    {
-		move_dirX -= 0.001f;
+		movementX -= 0.02f;
 	    }
-	    movementX += move_dirX;
 	}
-
-	if (movementY + move_dirY + 0.04f >= 1.0f)
+	
+	if (movementY + 0.03f >= 1.0f)
 	{
-	    movementY = 1.0f - 0.041f;
+	    movementY -= 0.03f;
 	    signY = false;
 	}
-	else if (movementY - move_dirY - 0.04f <= -1.0f)
+	else if (movementY - 0.03f <= -1.0f)
 	{
-	    movementY = 1.0f + 0.041f;
+	    movementY += 0.03f;
 	    signY = true;
 	}
 	else
 	{
-	    if (signY)
+	    if (!right_center || !left_center)
 	    {
-		move_dirY += 0.001f;
+		if (signY)
+		{
+		    movementY += 0.03f;
+		}
+		else
+		{
+		    movementY -= 0.03f;
+		}
 	    }
 	    else
 	    {
-		move_dirY -= 0.001f;
+		std::cout << "Center" << std::endl;
 	    }
-	    movementY += move_dirY;
 	}
 	
+// Ball's collision
+	if (movementX - 0.04f <= -0.9f &&
+	    movementY <= movement_left + 0.2f &&
+	    movementY >= movement_left - 0.2f)
+	{
+	    if (movementY <= movement_left + 0.2f && movementY > movement_left)
+	    {
+		signY = true;
+		left_center = false;
+	    }
+	    else if (movementY == movement_left)
+	    {
+		left_center = true;
+	    }
+	    else
+	    {
+		signY = false;
+		left_center = false;
+	    }
+	    std::cout << "LEFT WAS HIT" << std::endl;
+	    signX = !signX;
+	}
+	else if (movementX + 0.04f >= 0.9f &&
+		 movementY <= movement_right + 0.2f &&
+		 movementY >= movement_right - 0.2f)
+	{
+	    if (movementY <= movement_right + 0.2f && movementY > movement_right)
+	    {
+		signY = true;
+		right_center = false;
+	    }
+	    else if (movementY == movement_right)
+	    {
+		right_center = true;
+	    }
+	    else
+	    {
+		signY = false;
+		right_center = false;
+	    }
+	    std::cout << "RIGHT WAS HIT" << std::endl;
+	    signX = !signX;
+	}
+
+	if (movementX == 0)
+	{
+	    movementY = 0;
+	}
+
 	movement = glm::translate(movement, glm::vec3(movementX, movementY, 0.0f));
 	ball_shader_handler.set_matrix("movement", movement);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
