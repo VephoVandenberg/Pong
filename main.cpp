@@ -48,6 +48,7 @@ int main(int argc, char **argv)
     glfwSetKeyCallback(window, key_callback);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
     
     if (glewInit() != GLEW_OK)
     {
@@ -162,11 +163,11 @@ int main(int argc, char **argv)
 	glm::mat4 trans_left;
 	if (movement_left + move_dir_left + 0.2f >= 1.0f)
 	{
-	    movement_left = 1.0f - 0.21f;
+	    movement_left = 1.0f - 0.20f;
 	}
-	else if (movement_left - move_dir_left - 0.2f <= -1.0f)
+	else if (movement_left + move_dir_left - 0.2f <= -1.0f)
 	{
-	    movement_left = -1.0f + 0.21f;
+	    movement_left = -1.0f + 0.20f;
 	}
 	else
 	{
@@ -177,13 +178,13 @@ int main(int argc, char **argv)
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 // Right player bar movement
 	glm::mat4 trans_right;
-	if (movement_right + move_dir_right + 0.2f >= 1.0f)
+	if (movement_right + move_dir_right + 0.20f >= 1.0f)
 	{
-	    movement_right = 1.0f - 0.21f;
+	    movement_right = 1.0f - 0.20f;
 	}
-	else if (movement_right - move_dir_right - 0.2f <= -1.0f)
+	else if (movement_right + move_dir_right - 0.20f  <= -1.0f)
 	{
-	    movement_right = -1.0f + 0.21f;
+	    movement_right = -1.0f + 0.20f;
 	}
 	else
 	{
@@ -269,11 +270,11 @@ void key_callback(GLFWwindow *window,
 	{
 	    if (action == GLFW_PRESS)
 	    {
-		move_dir_left += 0.001f;
+		move_dir_left += 0.1f;
 	    }
 	    else if (action == GLFW_RELEASE)
 	    {
-		move_dir_left -= 0.001f;
+		move_dir_left -= 0.1f;
 	    }
 	}break;
 
@@ -281,11 +282,11 @@ void key_callback(GLFWwindow *window,
 	{
 	    if (action == GLFW_PRESS)
 	    {
-		move_dir_left -= 0.001f;       
+		move_dir_left -= 0.1f;       
 	    }
 	    else if (action == GLFW_RELEASE)
 	    {
-		move_dir_left += 0.001f;
+		move_dir_left += 0.1f;
 	    }
 	}break;
 
@@ -293,11 +294,11 @@ void key_callback(GLFWwindow *window,
 	{
 	    if (action == GLFW_PRESS)
 	    {
-		move_dir_right += 0.001f;
+		move_dir_right += 0.1f;
 	    }
 	    else if (action == GLFW_RELEASE)
 	    {
-		move_dir_right -= 0.001f;
+		move_dir_right -= 0.1f;
 	    }
 	}break;
 
@@ -305,11 +306,11 @@ void key_callback(GLFWwindow *window,
 	{
 	    if (action == GLFW_PRESS)
 	    {
-		move_dir_right -= 0.001f;
+		move_dir_right -= 0.1f;
 	    }
 	    else if (action == GLFW_RELEASE)
 	    {
-		move_dir_right += 0.001f;
+		move_dir_right += 0.1f;
 	    }
 	}break;
 
