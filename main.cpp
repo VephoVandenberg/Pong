@@ -1,7 +1,7 @@
 #define GLEW_STATIC
 
-#include "shader_handler.h"
-#include "stb_image_loader.h"
+#include "src/shader_handler.h"
+#include "src/stb_image_loader.h"
 
 #include <GLFW/glfw3.h>
 
@@ -19,16 +19,19 @@ static float move_dir_right = 0.0f;
 static float movementX = 0.2f;
 static float movementY = -0.1f;
 
-static float move_dirX = 0.0f;
-static float move_dirY = 0.0f;
-
 static bool signX;
 static bool signY;
 
 static bool left_center;
 static bool right_center;
 
-static float velocity = 0.01f;
+// score variables
+static unsigned int left_score = 0;
+static unsigned int right_score = 0;
+
+// velocity changes
+static float velocityX = 0.02f;
+static float velocityY = 0.02f;
 
 void key_callback(GLFWwindow *window,
 		  int key,
@@ -156,7 +159,8 @@ int main(int argc, char **argv)
 
     Shader player_shader_handler("shaders/vertex_shader.shr", "shaders/fragment_shader.shr");
     Shader ball_shader_handler("shaders/vertex_shader_ball.shr", "shaders/fragment_shader_ball.shr");
-    
+
+    unsigned int number_of_bounces = 0;
     while (!glfwWindowShouldClose(window))
     {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -205,37 +209,59 @@ int main(int argc, char **argv)
 	
 	glm::mat4 movement;
 
-	if (movementX + 0.02f >= 1.0f)
+	if (movementX + velocityX >= 1.0f)
 	{
 	    movementX = 0.0f;
 	    signX = false;
+	    left_score++;
+	    std::cout << "Remaining score " << left_score << ":" << right_score << std::endl;
+	    velocityX = 0.02f;
 	}
-	else if (movementX - 0.02f <= -1.0f)
+	else if (movementX - velocityX <= -1.0f)
 	{
 	    movementX = 0.0f;
 	    signX = true;
+	    right_score++;
+	    std::cout << "Remaining score " << left_score << ":" << right_score << std::endl;
+	    velocityX = 0.02f;
 	}
 	else
 	{
 	    if (signX)
 	    {
-		movementX += 0.02f;
+		movementX += velocityX;
 	    }
 	    else
 	    {
-		movementX -= 0.02f;
+		movementX -= velocityX;
 	    }
 	}
 	
-	if (movementY + 0.03f >= 1.0f)
+	if (movementY + velocityY >= 1.0f)
 	{
-	    movementY -= 0.03f;
+	    movementY -= velocityY;
 	    signY = false;
+	    if (velocityY == 0.02f)
+	    {
+		velocityY += 0.02f;
+	    }
+	    else
+	    {
+		velocityY -= 0.02f;
+	    }
 	}
-	else if (movementY - 0.03f <= -1.0f)
+	else if (movementY - velocityY <= -1.0f)
 	{
-	    movementY += 0.03f;
+	    movementY += velocityY;
 	    signY = true;
+	    if (velocityY == 0.02f)
+	    {
+		velocityY += 0.02f;
+	    }
+	    else
+	    {
+		velocityY -= 0.02f;
+	    }
 	}
 	else
 	{
@@ -243,11 +269,11 @@ int main(int argc, char **argv)
 	    {
 		if (signY)
 		{
-		    movementY += 0.03f;
+		    movementY += velocityY;
 		}
 		else
 		{
-		    movementY -= 0.03f;
+		    movementY -= velocityY;
 		}
 	    }
 	    else
@@ -275,8 +301,8 @@ int main(int argc, char **argv)
 		signY = false;
 		left_center = false;
 	    }
-	    std::cout << "LEFT WAS HIT" << std::endl;
 	    signX = !signX;
+	    number_of_bounces++;
 	}
 	else if (movementX + 0.04f >= 0.9f &&
 		 movementY <= movement_right + 0.2f &&
@@ -296,13 +322,18 @@ int main(int argc, char **argv)
 		signY = false;
 		right_center = false;
 	    }
-	    std::cout << "RIGHT WAS HIT" << std::endl;
 	    signX = !signX;
+	    number_of_bounces++;
 	}
 
 	if (movementX == 0)
 	{
 	    movementY = 0;
+	}
+	if (number_of_bounces == 5)
+	{
+	    number_of_bounces = 0;
+	    velocityX += 0.001f;
 	}
 
 	movement = glm::translate(movement, glm::vec3(movementX, movementY, 0.0f));
