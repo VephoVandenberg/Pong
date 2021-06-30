@@ -243,11 +243,11 @@ int main(int argc, char **argv)
 	    signY = false;
 	    if (velocityY == 0.02f)
 	    {
-		velocityY += 0.02f;
+		velocityY += 0.04f;
 	    }
 	    else
 	    {
-		velocityY -= 0.02f;
+		velocityY -= 0.04f;
 	    }
 	}
 	else if (movementY - velocityY <= -1.0f)
@@ -256,16 +256,16 @@ int main(int argc, char **argv)
 	    signY = true;
 	    if (velocityY == 0.02f)
 	    {
-		velocityY += 0.02f;
+		velocityY += 0.04f;
 	    }
 	    else
 	    {
-		velocityY -= 0.02f;
+		velocityY -= 0.04f;
 	    }
 	}
 	else
 	{
-	    if (!right_center || !left_center)
+	    if (!left_center || !right_center)
 	    {
 		if (signY)
 		{
@@ -276,51 +276,49 @@ int main(int argc, char **argv)
 		    movementY -= velocityY;
 		}
 	    }
-	    else
-	    {
-		std::cout << "Center" << std::endl;
-	    }
 	}
 	
 // Ball's collision
 	if (movementX - 0.04f <= -0.9f &&
+	    movementX - 0.04f > -0.95f &&
 	    movementY <= movement_left + 0.2f &&
 	    movementY >= movement_left - 0.2f)
 	{
-	    if (movementY <= movement_left + 0.2f && movementY > movement_left)
+	    if (movementY <= movement_left + 0.2f && movementY > movement_left + 0.05f)
 	    {
 		signY = true;
 		left_center = false;
 	    }
-	    else if (movementY == movement_left)
-	    {
-		left_center = true;
-	    }
-	    else
+	    else if (movementY >= movement_left - 0.2f && movementY < movement_left - 0.05f)
 	    {
 		signY = false;
 		left_center = false;
+	    }
+	    else
+	    {
+		left_center = true;
 	    }
 	    signX = !signX;
 	    number_of_bounces++;
 	}
 	else if (movementX + 0.04f >= 0.9f &&
+		 movementX + 0.04f > 0.95f &&
 		 movementY <= movement_right + 0.2f &&
 		 movementY >= movement_right - 0.2f)
 	{
-	    if (movementY <= movement_right + 0.2f && movementY > movement_right)
+	    if (movementY <= movement_right + 0.2f && movementY > movement_right + 0.05f)
 	    {
 		signY = true;
 		right_center = false;
 	    }
-	    else if (movementY == movement_right)
-	    {
-		right_center = true;
-	    }
-	    else
+	    else if (movementY >= movement_right - 0.2f && movementY < movement_right - 0.05f)
 	    {
 		signY = false;
 		right_center = false;
+	    }
+	    else
+	    {
+		right_center = true;			       
 	    }
 	    signX = !signX;
 	    number_of_bounces++;
