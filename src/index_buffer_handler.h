@@ -8,10 +8,11 @@ class IndexBuffer
 public:
     IndexBuffer(const void *data, const unsigned int count);
 
-    inline void bind_buffer(void) const;
-    inline void unbind_buffer(void) const;
+    void bind_buffer(void) const;
+    void unbind_buffer(void) const;
 private:
     unsigned int index_buffer_ID;
+    unsigned int count_indices;
 };
 
 #endif

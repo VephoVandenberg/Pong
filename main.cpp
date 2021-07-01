@@ -3,6 +3,7 @@
 #include "src/shader_handler.h"
 #include "src/vertex_buffer_handler.h"
 #include "src/index_buffer_handler.h"
+#include "src/vertex_array_handler.h"
 #include "src/stb_image_loader.h"
 
 #include <GLFW/glfw3.h>
@@ -65,7 +66,7 @@ int main(int argc, char **argv)
 	std::cout << "Could not initialize GLEW" << std::endl;
     }
     
-    float player_bar[24] =
+    float player_paddle[24] =
     {
 	-0.05f, -0.2f, 0.0f, 1.0f, 1.0f, 1.0f, // bottom left
 	 0.0f,  -0.2f, 0.0f, 1.0f, 1.0f, 1.0f, // bottom right
@@ -93,14 +94,13 @@ int main(int argc, char **argv)
 	1, 2, 3  // second triangle 
     };
 
-    unsigned int VAOs[2];
     unsigned int ball_texture;
-    
-    glGenVertexArrays(2, VAOs);
-// Create player bar
-    glBindVertexArray(VAOs[0]);
 
-    VertexBuffer player_buffer_object(player_bar, sizeof(player_bar));
+
+    
+// Create player bar
+    VertexArray player_array_object;
+    VertexBuffer player_buffer_object(player_paddle, sizeof(player_paddle));
     IndexBuffer player_index_object(player_indices, sizeof(player_indices));
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
@@ -110,8 +110,7 @@ int main(int argc, char **argv)
     glEnableVertexAttribArray(1);
 
 // Create ball
-    glBindVertexArray(VAOs[1]);
-
+    VertexArray ball_array_object;
     VertexBuffer ball_buffer_object(ball, sizeof(ball));
     IndexBuffer ball_index_object(ball_indices, sizeof(ball_indices));
     
@@ -156,9 +155,9 @@ int main(int argc, char **argv)
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-// Left player bar movement
+// Left player paddle  movement
 	player_shader_handler.use();
-	glBindVertexArray(VAOs[0]);
+	player_array_object.bind_buffer();
 	glm::mat4 trans_left;
 	if (movement_left + move_dir_left + 0.2f >= 1.0f)
 	{
@@ -175,7 +174,7 @@ int main(int argc, char **argv)
 	trans_left = glm::translate(trans_left, glm::vec3(-0.9f, movement_left, 0.0f));
         player_shader_handler.set_matrix("transform", trans_left);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-// Right player bar movement
+// Right player paddle  movement
 	glm::mat4 trans_right;
 	if (movement_right + move_dir_right + 0.20f >= 1.0f)
 	{
@@ -194,9 +193,7 @@ int main(int argc, char **argv)
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 // Ball's movement
 	ball_shader_handler.use();
-	glBindVertexArray(VAOs[1]);
-
-	
+	ball_array_object.bind_buffer();
 	glm::mat4 movement;
 
 	if (movementX + velocityX >= 1.0f)
