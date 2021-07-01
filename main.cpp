@@ -1,6 +1,8 @@
 #define GLEW_STATIC
 
 #include "src/shader_handler.h"
+#include "src/vertex_buffer_handler.h"
+#include "src/index_buffer_handler.h"
 #include "src/stb_image_loader.h"
 
 #include <GLFW/glfw3.h>
@@ -92,21 +94,14 @@ int main(int argc, char **argv)
     };
 
     unsigned int VAOs[2];
-    unsigned int player_index_object, player_buffer_object;
-    unsigned int ball_index_object, ball_buffer_object;
     unsigned int ball_texture;
     
     glGenVertexArrays(2, VAOs);
 // Create player bar
     glBindVertexArray(VAOs[0]);
-    glGenBuffers(1, &player_buffer_object);
-    glGenBuffers(1, &player_index_object);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, player_buffer_object);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(player_bar), player_bar, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, player_index_object);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(player_indices), player_indices, GL_STATIC_DRAW);
+    VertexBuffer player_buffer_object(player_bar, sizeof(player_bar));
+    IndexBuffer player_index_object(player_indices, sizeof(player_indices));
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -116,14 +111,9 @@ int main(int argc, char **argv)
 
 // Create ball
     glBindVertexArray(VAOs[1]);
-    glGenBuffers(1, &ball_buffer_object);
-    glGenBuffers(1, &ball_index_object);
 
-    glBindBuffer(GL_ARRAY_BUFFER, ball_buffer_object);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(ball), ball, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ball_index_object);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(ball_indices), ball_indices, GL_STATIC_DRAW);
+    VertexBuffer ball_buffer_object(ball, sizeof(ball));
+    IndexBuffer ball_index_object(ball_indices, sizeof(ball_indices));
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
