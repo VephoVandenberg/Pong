@@ -1,5 +1,9 @@
 #define GLEW_STATIC
 
+/*
+  FINISH setting vertex attributes
+*/
+
 #include "src/shader_handler.h"
 #include "src/vertex_buffer_handler.h"
 #include "src/index_buffer_handler.h"
@@ -96,33 +100,23 @@ int main(int argc, char **argv)
 
     unsigned int ball_texture;
 
-
-    
 // Create player bar
     VertexArray player_array_object;
     VertexBuffer player_buffer_object(player_paddle, sizeof(player_paddle));
     IndexBuffer player_index_object(player_indices, sizeof(player_indices));
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
+    player_array_object.set_attribute_pointer(0, 3, 6, 0); // vertex coords
+    player_array_object.set_attribute_pointer(1, 3, 6, 3); // color
 
 // Create ball
     VertexArray ball_array_object;
     VertexBuffer ball_buffer_object(ball, sizeof(ball));
     IndexBuffer ball_index_object(ball_indices, sizeof(ball_indices));
-    
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
+    ball_array_object.set_attribute_pointer(0, 3, 8, 0); // vertex coords
+    ball_array_object.set_attribute_pointer(1, 3, 8, 3); // color
+    ball_array_object.set_attribute_pointer(2, 2, 8, 6); // texture coords
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
-    glEnableVertexAttribArray(2);
-    
 // Initializing ball's texture
     int width, height, nr_channels;
     unsigned char *data = stbi_load("textures/ball.png", &width, &height, &nr_channels, 0);
