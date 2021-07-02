@@ -1,13 +1,10 @@
 #define GLEW_STATIC
 
-/*
-  FINISH setting vertex attributes
-*/
-
 #include "src/shader_handler.h"
 #include "src/vertex_buffer_handler.h"
 #include "src/index_buffer_handler.h"
 #include "src/vertex_array_handler.h"
+#include "src/game_entities.h"
 #include "src/stb_image_loader.h"
 
 #include <GLFW/glfw3.h>
@@ -15,30 +12,10 @@
 const unsigned int screen_width = 800;
 const unsigned int screen_height = 500;
 
-// variables to move bars
-static float movement_left = 0.0f;
-static float move_dir_left = 0.0f;
-
-static float movement_right = 0.0f;
-static float move_dir_right = 0.0f;
-
-// variables for movement of ball
-static float movementX = 0.2f;
-static float movementY = -0.1f;
-
-static bool signX;
-static bool signY;
-
-static bool left_center;
-static bool right_center;
-
-// score variables
-static unsigned int left_score = 0;
-static unsigned int right_score = 0;
-
-// velocity changes
-static float velocityX = 0.02f;
-static float velocityY = 0.02f;
+static paddle_movement left_paddle_move = {0.0f, 0.0f};
+static paddle_movement right_paddle_move = {0.0f, 0.0f};
+static ball_movement ball_move;
+static game_entity game = {0, 0};
 
 void key_callback(GLFWwindow *window,
 		  int key,
@@ -98,6 +75,12 @@ int main(int argc, char **argv)
 	1, 2, 3  // second triangle 
     };
 
+    ball_move.movementX = 0.2f;
+    ball_move.movementY = -0.1f;
+
+    ball_move.velocityX = 0.02f;
+    ball_move.velocityY = 0.02f;
+
     unsigned int ball_texture;
 
 // Create player bar
@@ -153,36 +136,36 @@ int main(int argc, char **argv)
 	player_shader_handler.use();
 	player_array_object.bind_buffer();
 	glm::mat4 trans_left;
-	if (movement_left + move_dir_left + 0.2f >= 1.0f)
+	if (left_paddle_move.movement + left_paddle_move.movement_dir + 0.2f >= 1.0f)
 	{
-	    movement_left = 1.0f - 0.20f;
+	    left_paddle_move.movement = 1.0f - 0.20f;
 	}
-	else if (movement_left + move_dir_left - 0.2f <= -1.0f)
+	else if (left_paddle_move.movement + left_paddle_move.movement_dir - 0.2f <= -1.0f)
 	{
-	    movement_left = -1.0f + 0.20f;
+	    left_paddle_move.movement = -1.0f + 0.20f;
 	}
 	else
 	{
-	    movement_left += move_dir_left;
+	    left_paddle_move.movement += left_paddle_move.movement_dir;
 	}
-	trans_left = glm::translate(trans_left, glm::vec3(-0.9f, movement_left, 0.0f));
+	trans_left = glm::translate(trans_left, glm::vec3(-0.9f, left_paddle_move.movement, 0.0f));
         player_shader_handler.set_matrix("transform", trans_left);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 // Right player paddle  movement
 	glm::mat4 trans_right;
-	if (movement_right + move_dir_right + 0.20f >= 1.0f)
+	if (right_paddle_move.movement + right_paddle_move.movement_dir + 0.20f >= 1.0f)
 	{
-	    movement_right = 1.0f - 0.20f;
+	    right_paddle_move.movement = 1.0f - 0.20f;
 	}
-	else if (movement_right + move_dir_right - 0.20f  <= -1.0f)
+	else if (right_paddle_move.movement + right_paddle_move.movement_dir - 0.20f  <= -1.0f)
 	{
-	    movement_right = -1.0f + 0.20f;
+	    right_paddle_move.movement = -1.0f + 0.20f;
 	}
 	else
 	{
-	    movement_right += move_dir_right;
+	    right_paddle_move.movement += right_paddle_move.movement_dir;
 	}
-	trans_right = glm::translate(trans_right, glm::vec3(0.95f, movement_right, 0.0f));
+	trans_right = glm::translate(trans_right, glm::vec3(0.95f, right_paddle_move.movement, 0.0f));
 	player_shader_handler.set_matrix("transform", trans_right);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 // Ball's movement
@@ -190,132 +173,136 @@ int main(int argc, char **argv)
 	ball_array_object.bind_buffer();
 	glm::mat4 movement;
 
-	if (movementX + velocityX >= 1.0f)
+	if (ball_move.movementX + ball_move.velocityX >= 1.0f)
 	{
-	    movementX = 0.0f;
-	    signX = false;
-	    left_score++;
-	    std::cout << "Remaining score " << left_score << ":" << right_score << std::endl;
-	    velocityX = 0.02f;
+	    ball_move.movementX = 0.0f;
+	    ball_move.signX = false;
+	    game.left_score++;
+	    std::cout << "Remaining score " << game.left_score << ":" << game.right_score << std::endl;
+	    ball_move.velocityX = 0.02f;
 	}
-	else if (movementX - velocityX <= -1.0f)
+	else if (ball_move.movementX - ball_move.velocityX <= -1.0f)
 	{
-	    movementX = 0.0f;
-	    signX = true;
-	    right_score++;
-	    std::cout << "Remaining score " << left_score << ":" << right_score << std::endl;
-	    velocityX = 0.02f;
+	    ball_move.movementX = 0.0f;
+	    ball_move.signX = true;
+	    game.right_score++;
+	    std::cout << "Remaining score " << game.left_score << ":" << game.right_score << std::endl;
+	    ball_move.velocityX = 0.02f;
 	}
 	else
 	{
-	    if (signX)
+	    if (ball_move.signX)
 	    {
-		movementX += velocityX;
+		ball_move.movementX += ball_move.velocityX;
 	    }
 	    else
 	    {
-		movementX -= velocityX;
+		ball_move.movementX -= ball_move.velocityX;
 	    }
 	}
 	
-	if (movementY + velocityY >= 1.0f)
+	if (ball_move.movementY + ball_move.velocityY >= 1.0f)
 	{
-	    movementY -= velocityY;
-	    signY = false;
-	    if (velocityY == 0.02f)
+	    ball_move.movementY -= ball_move.velocityY;
+	    ball_move.signY = false;
+	    if (ball_move.velocityY == 0.02f)
 	    {
-		velocityY += 0.04f;
+		ball_move.velocityY += 0.04f;
 	    }
 	    else
 	    {
-		velocityY -= 0.04f;
+		ball_move.velocityY -= 0.04f;
 	    }
 	}
-	else if (movementY - velocityY <= -1.0f)
+	else if (ball_move.movementY - ball_move.velocityY <= -1.0f)
 	{
-	    movementY += velocityY;
-	    signY = true;
-	    if (velocityY == 0.02f)
+	    ball_move.movementY += ball_move.velocityY;
+	    ball_move.signY = true;
+	    if (ball_move.velocityY == 0.02f)
 	    {
-		velocityY += 0.04f;
+		ball_move.velocityY += 0.04f;
 	    }
 	    else
 	    {
-		velocityY -= 0.04f;
+		ball_move.velocityY -= 0.04f;
 	    }
 	}
 	else
 	{
-	    if (!left_center || !right_center)
+	    if (!ball_move.left_center || !ball_move.right_center)
 	    {
-		if (signY)
+		if (ball_move.signY)
 		{
-		    movementY += velocityY;
+		    ball_move.movementY += ball_move.velocityY;
 		}
 		else
 		{
-		    movementY -= velocityY;
+		    ball_move.movementY -= ball_move.velocityY;
 		}
 	    }
 	}
 	
 // Ball's collision
-	if (movementX - 0.04f <= -0.9f &&
-	    movementX - 0.04f > -0.95f &&
-	    movementY <= movement_left + 0.2f &&
-	    movementY >= movement_left - 0.2f)
+	if (ball_move.movementX - 0.04f <= -0.9f &&
+	    ball_move.movementX - 0.04f > -0.95f &&
+	    ball_move.movementY <= left_paddle_move.movement + 0.2f &&
+	    ball_move.movementY >= left_paddle_move.movement - 0.2f)
 	{
-	    if (movementY <= movement_left + 0.2f && movementY > movement_left + 0.05f)
+	    if (ball_move.movementY <= left_paddle_move.movement + 0.2f &&
+		ball_move.movementY > left_paddle_move.movement + 0.05f)
 	    {
-		signY = true;
-		left_center = false;
+		ball_move.signY = true;
+		ball_move.left_center = false;
 	    }
-	    else if (movementY >= movement_left - 0.2f && movementY < movement_left - 0.05f)
+	    else if (ball_move.movementY >= left_paddle_move.movement - 0.2f
+		     && ball_move.movementY < left_paddle_move.movement - 0.05f)
 	    {
-		signY = false;
-		left_center = false;
+		ball_move.signY = false;
+		ball_move.left_center = false;
 	    }
 	    else
 	    {
-		left_center = true;
+		ball_move.left_center = true;
 	    }
-	    signX = !signX;
+	    ball_move.signX = !ball_move.signX;
 	    number_of_bounces++;
 	}
-	else if (movementX + 0.04f >= 0.9f &&
-		 movementX + 0.04f > 0.95f &&
-		 movementY <= movement_right + 0.2f &&
-		 movementY >= movement_right - 0.2f)
+	else if (ball_move.movementX + 0.04f >= 0.9f &&
+		 ball_move.movementX + 0.04f > 0.95f &&
+		 ball_move.movementY <= right_paddle_move.movement + 0.2f &&
+		 ball_move.movementY >= right_paddle_move.movement - 0.2f)
 	{
-	    if (movementY <= movement_right + 0.2f && movementY > movement_right + 0.05f)
+	    if (ball_move.movementY <= right_paddle_move.movement + 0.2f &&
+		ball_move.movementY > right_paddle_move.movement + 0.05f)
 	    {
-		signY = true;
-		right_center = false;
+		ball_move.signY = true;
+		ball_move.right_center = false;
 	    }
-	    else if (movementY >= movement_right - 0.2f && movementY < movement_right - 0.05f)
+	    else if (ball_move.movementY >= right_paddle_move.movement - 0.2f &&
+		     ball_move.movementY < right_paddle_move.movement - 0.05f)
 	    {
-		signY = false;
-		right_center = false;
+		ball_move.signY = false;
+		ball_move.right_center = false;
 	    }
 	    else
 	    {
-		right_center = true;			       
+		ball_move.right_center = true;			       
 	    }
-	    signX = !signX;
+	    ball_move.signX = !ball_move.signX;
 	    number_of_bounces++;
 	}
 
-	if (movementX == 0)
+	if (ball_move.movementX == 0)
 	{
-	    movementY = 0;
+	    ball_move.movementY = 0;
 	}
 	if (number_of_bounces == 5)
 	{
 	    number_of_bounces = 0;
-	    velocityX += 0.001f;
+	    ball_move.velocityX += 0.001f;
 	}
 
-	movement = glm::translate(movement, glm::vec3(movementX, movementY, 0.0f));
+	movement = glm::translate(movement, glm::vec3(ball_move.movementX, ball_move.movementY, 0.0f));
 	ball_shader_handler.set_matrix("movement", movement);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	
@@ -339,11 +326,11 @@ void key_callback(GLFWwindow *window,
 	{
 	    if (action == GLFW_PRESS)
 	    {
-		move_dir_left += 0.1f;
+		left_paddle_move.movement_dir += 0.1f;
 	    }
 	    else if (action == GLFW_RELEASE)
 	    {
-		move_dir_left -= 0.1f;
+		left_paddle_move.movement_dir -= 0.1f;
 	    }
 	}break;
 
@@ -351,11 +338,11 @@ void key_callback(GLFWwindow *window,
 	{
 	    if (action == GLFW_PRESS)
 	    {
-		move_dir_left -= 0.1f;       
+	        left_paddle_move.movement_dir -= 0.1f;       
 	    }
 	    else if (action == GLFW_RELEASE)
 	    {
-		move_dir_left += 0.1f;
+	        left_paddle_move.movement_dir += 0.1f;
 	    }
 	}break;
 
@@ -363,11 +350,11 @@ void key_callback(GLFWwindow *window,
 	{
 	    if (action == GLFW_PRESS)
 	    {
-		move_dir_right += 0.1f;
+		right_paddle_move.movement_dir += 0.1f;
 	    }
 	    else if (action == GLFW_RELEASE)
 	    {
-		move_dir_right -= 0.1f;
+	        right_paddle_move.movement_dir -= 0.1f;
 	    }
 	}break;
 
@@ -375,11 +362,11 @@ void key_callback(GLFWwindow *window,
 	{
 	    if (action == GLFW_PRESS)
 	    {
-		move_dir_right -= 0.1f;
+	        right_paddle_move.movement_dir -= 0.1f;
 	    }
 	    else if (action == GLFW_RELEASE)
 	    {
-		move_dir_right += 0.1f;
+	        right_paddle_move.movement_dir += 0.1f;
 	    }
 	}break;
 
