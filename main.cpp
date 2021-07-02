@@ -4,6 +4,7 @@
 #include "src/vertex_buffer_handler.h"
 #include "src/index_buffer_handler.h"
 #include "src/vertex_array_handler.h"
+#include "src/texture_handler.h"
 #include "src/game_entities.h"
 #include "src/stb_image_loader.h"
 
@@ -14,8 +15,8 @@ const unsigned int screen_height = 500;
 
 static paddle_movement left_paddle_move = {0.0f, 0.0f};
 static paddle_movement right_paddle_move = {0.0f, 0.0f};
-static ball_movement ball_move;
 static game_entity game = {0, 0};
+static ball_movement ball_move;
 
 void key_callback(GLFWwindow *window,
 		  int key,
@@ -103,26 +104,10 @@ int main(int argc, char **argv)
 // Initializing ball's texture
     int width, height, nr_channels;
     unsigned char *data = stbi_load("textures/ball.png", &width, &height, &nr_channels, 0);
-
-    glGenTextures(1, &ball_texture);
-    glBindTexture(GL_TEXTURE_2D, ball_texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    if (data)
-    {
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-	std::cout << "Failed to load"  << std::endl;
-    }
+    TextureHandler texture_obj(data, width, height);
     stbi_image_free(data);
-
+    
+// Creating shaders for paddles and ball as well
     Shader player_shader_handler("shaders/vertex_shader.shr", "shaders/fragment_shader.shr");
     Shader ball_shader_handler("shaders/vertex_shader_ball.shr", "shaders/fragment_shader_ball.shr");
 

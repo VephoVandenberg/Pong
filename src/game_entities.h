@@ -1,5 +1,5 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef GAME_HEADER
+#define GAME_HEADER
 
 struct game_entity
 {
