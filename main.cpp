@@ -96,8 +96,8 @@ int main(int argc, char **argv)
 		1.0f, 1.0f, 1.0f);
 
 // Creating shaders for paddles and ball as well
-    Shader player_shader_handler("shaders/vertex_shader.shr", "shaders/fragment_shader.shr");
-    Shader ball_shader_handler("shaders/vertex_shader_ball.shr", "shaders/fragment_shader_ball.shr");
+    Shader player_shader_handler("shaders/vertex_shader.vert", "shaders/fragment_shader.frag");
+    Shader ball_shader_handler("shaders/vertex_shader_ball.vert", "shaders/fragment_shader_ball.frag");
 
     unsigned int number_of_bounces = 0;
     while (!glfwWindowShouldClose(window))
