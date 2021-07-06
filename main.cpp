@@ -216,8 +216,8 @@ int main(int argc, char **argv)
 	}
 	
 // Ball's collision
-	if (ball_move.movementX - 0.05f <= -0.90f &&
-	    ball_move.movementX - 0.05f > -0.95f &&
+	if (ball_move.movementX - 0.04f <= -0.90f &&
+	    ball_move.movementX - 0.04f > -0.95f &&
 	    ball_move.movementY <= left_paddle_move.movement + 0.2f &&
 	    ball_move.movementY >= left_paddle_move.movement - 0.2f)
 	{
@@ -240,8 +240,8 @@ int main(int argc, char **argv)
 	    ball_move.signX = !ball_move.signX;
 	    number_of_bounces++;
 	}
-	else if (ball_move.movementX + 0.05f >= 0.90f &&
-		 ball_move.movementX + 0.05f < 0.95f &&
+	else if (ball_move.movementX + 0.04f >= 0.90f &&
+		 ball_move.movementX + 0.04f < 0.95f &&
 		 ball_move.movementY <= right_paddle_move.movement + 0.2f &&
 		 ball_move.movementY >= right_paddle_move.movement - 0.2f)
 	{
