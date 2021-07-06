@@ -11,7 +11,7 @@
 #define M_PI 3.1415926535897932
 
 const unsigned int screen_width = 800;
-const unsigned int screen_height = 500;
+const unsigned int screen_height = 800;
 
 static paddle_movement left_paddle_move = {0.0f, 0.0f};
 static paddle_movement right_paddle_move = {0.0f, 0.0f};
