@@ -1,7 +1,6 @@
 #version 330 core
 
 in vec3 out_color;
-in vec2 out_tex_coords;
 
 out vec4 frag_color;
 
@@ -9,5 +8,5 @@ uniform sampler2D ball_texture;
 
 void main(void)
 {
-	frag_color = texture(ball_texture, out_tex_coords);
+	frag_color = vec4(out_color, 1.0f);
 }

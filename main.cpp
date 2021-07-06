@@ -11,7 +11,7 @@
 #define M_PI 3.1415926535897932
 
 const unsigned int screen_width = 800;
-const unsigned int screen_height = 500;
+const unsigned int screen_height = 800;
 
 static paddle_movement left_paddle_move = {0.0f, 0.0f};
 static paddle_movement right_paddle_move = {0.0f, 0.0f};
@@ -23,8 +23,7 @@ void key_callback(GLFWwindow *window,
 		  int scancode,
 		  int action,
 		  int mods);
-void framebuffer_size_callback(GLFWwindow *window,
-			       int width, int height);
+
 void draw_circle(float x, float y, float radius,
 		 int number_of_segments,
 		 VertexArray &vao,
@@ -37,6 +36,8 @@ int main(int argc, char **argv)
     {
 	std::cout << "Could not initialize GLFW" << std::endl;
     }
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
 
     GLFWwindow *window = glfwCreateWindow(screen_width,
 					  screen_height,
@@ -44,7 +45,6 @@ int main(int argc, char **argv)
 					  0,
 					  0);
     glfwSetKeyCallback(window, key_callback);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
     
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 
 // Creating shaders for paddles and ball as well
     Shader player_shader_handler("shaders/vertex_shader.shr", "shaders/fragment_shader.shr");
-    Shader ball_shader_handler("shaders/vertex_shader_ball001.shr", "shaders/fragment_shader_ball001.shr");
+    Shader ball_shader_handler("shaders/vertex_shader_ball.shr", "shaders/fragment_shader_ball.shr");
 
     unsigned int number_of_bounces = 0;
     while (!glfwWindowShouldClose(window))
@@ -348,11 +348,6 @@ void key_callback(GLFWwindow *window,
     }
 }
 
-void framebuffer_size_callback(GLFWwindow *window,
-			       int width, int height)
-{
-    glViewport(0, 0, width, height);
-}
 
 void draw_circle(float x, float y, float radius,
 		 int number_of_segments,
