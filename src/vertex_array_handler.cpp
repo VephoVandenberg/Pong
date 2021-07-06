@@ -24,3 +24,4 @@ void VertexArray::set_attribute_pointer(unsigned int location,
     glVertexAttribPointer(location, dimmension, GL_FLOAT, GL_FALSE, attribute_count*sizeof(float), (void*)(location_in_bytes*sizeof(float)));
     glEnableVertexAttribArray(location);
 }
+

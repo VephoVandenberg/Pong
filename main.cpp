@@ -4,11 +4,11 @@
 #include "src/vertex_buffer_handler.h"
 #include "src/index_buffer_handler.h"
 #include "src/vertex_array_handler.h"
-#include "src/texture_handler.h"
 #include "src/game_entities.h"
-#include "src/stb_image_loader.h"
 
 #include <GLFW/glfw3.h>
+
+#define M_PI 3.1415926535897932
 
 const unsigned int screen_width = 800;
 const unsigned int screen_height = 500;
@@ -25,6 +25,11 @@ void key_callback(GLFWwindow *window,
 		  int mods);
 void framebuffer_size_callback(GLFWwindow *window,
 			       int width, int height);
+void draw_circle(float x, float y, float radius,
+		 int number_of_segments,
+		 VertexArray &vao,
+		 VertexBuffer &vbo,
+		 float red, float green, float blue);
 
 int main(int argc, char **argv)
 {
@@ -61,21 +66,8 @@ int main(int argc, char **argv)
 	0, 1, 2, // first triangle
 	1, 2, 3  // second triangle 
     };
+
     
-    float ball[32] = 
-    {
-	-0.04f, -0.04f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // bottom left
-	 0.04f, -0.04f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
-	-0.04f,  0.04f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top left
-  	 0.04f,  0.04f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f  // top right
-    };
-
-    unsigned int ball_indices[6] = 
-    {
-	0, 1, 2, // first triangle
-	1, 2, 3  // second triangle 
-    };
-
     ball_move.movementX = 0.2f;
     ball_move.movementY = -0.1f;
 
@@ -93,23 +85,19 @@ int main(int argc, char **argv)
     player_array_object.set_attribute_pointer(1, 3, 6, 3); // color
 
 // Create ball
-    VertexArray ball_array_object;
-    VertexBuffer ball_buffer_object(ball, sizeof(ball));
-    IndexBuffer ball_index_object(ball_indices, sizeof(ball_indices));
-
-    ball_array_object.set_attribute_pointer(0, 3, 8, 0); // vertex coords
-    ball_array_object.set_attribute_pointer(1, 3, 8, 3); // color
-    ball_array_object.set_attribute_pointer(2, 2, 8, 6); // texture coords
-
-// Initializing ball's texture
-    int width, height, nr_channels;
-    unsigned char *data = stbi_load("textures/ball.png", &width, &height, &nr_channels, 0);
-    TextureHandler texture_obj(data, width, height);
-    stbi_image_free(data);
     
+    VertexArray ball_array_object;
+    VertexBuffer ball_buffer_object;
+
+    unsigned int number_of_segments = 40;
+
+    draw_circle(0.0f, 0.0f, 0.04f, number_of_segments,
+		ball_array_object, ball_buffer_object,
+		1.0f, 1.0f, 1.0f);
+
 // Creating shaders for paddles and ball as well
     Shader player_shader_handler("shaders/vertex_shader.shr", "shaders/fragment_shader.shr");
-    Shader ball_shader_handler("shaders/vertex_shader_ball.shr", "shaders/fragment_shader_ball.shr");
+    Shader ball_shader_handler("shaders/vertex_shader_ball001.shr", "shaders/fragment_shader_ball001.shr");
 
     unsigned int number_of_bounces = 0;
     while (!glfwWindowShouldClose(window))
@@ -228,8 +216,8 @@ int main(int argc, char **argv)
 	}
 	
 // Ball's collision
-	if (ball_move.movementX - 0.04f <= -0.9f &&
-	    ball_move.movementX - 0.04f > -0.95f &&
+	if (ball_move.movementX - 0.05f <= -0.90f &&
+	    ball_move.movementX - 0.05f > -0.95f &&
 	    ball_move.movementY <= left_paddle_move.movement + 0.2f &&
 	    ball_move.movementY >= left_paddle_move.movement - 0.2f)
 	{
@@ -252,8 +240,8 @@ int main(int argc, char **argv)
 	    ball_move.signX = !ball_move.signX;
 	    number_of_bounces++;
 	}
-	else if (ball_move.movementX + 0.04f >= 0.9f &&
-		 ball_move.movementX + 0.04f > 0.95f &&
+	else if (ball_move.movementX + 0.05f >= 0.90f &&
+		 ball_move.movementX + 0.05f < 0.95f &&
 		 ball_move.movementY <= right_paddle_move.movement + 0.2f &&
 		 ball_move.movementY >= right_paddle_move.movement - 0.2f)
 	{
@@ -289,8 +277,7 @@ int main(int argc, char **argv)
 
 	movement = glm::translate(movement, glm::vec3(ball_move.movementX, ball_move.movementY, 0.0f));
 	ball_shader_handler.set_matrix("movement", movement);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	
+	glDrawArrays(GL_TRIANGLE_FAN, 0, number_of_segments + 2);
 	glfwSwapBuffers(window);
 	glfwPollEvents();
 
@@ -367,4 +354,43 @@ void framebuffer_size_callback(GLFWwindow *window,
     glViewport(0, 0, width, height);
 }
 
+void draw_circle(float x, float y, float radius,
+		 int number_of_segments,
+		 VertexArray &vao,
+		 VertexBuffer &vbo,
+		 float red, float green, float blue)
+{
+    int number_of_vertices = 3 + number_of_segments - 1;
+    float twice_pi = 2.0f * M_PI;
 
+    float *vertices = new float[6*number_of_vertices];
+
+    vertices[0] = x;
+    vertices[1] = y;
+    vertices[2] = 0.0f;
+
+    vertices[3] = red;
+    vertices[4] = blue;
+    vertices[5] = green;
+
+    for (int i = 1; i < number_of_vertices; i++)
+    {
+	vertices[6*i] = x + radius*cos(i*twice_pi/number_of_segments);
+	vertices[6*i + 1] = y + radius*sin(i*twice_pi/number_of_segments);
+	vertices[6*i + 2] = 0.0f;
+
+	vertices[6*i + 3] = red;
+	vertices[6*i + 4] = blue;
+	vertices[6*i + 5] = green;
+    }
+
+    vao.bind_buffer();
+    vbo.bind_buffer();
+
+    vbo.write_data(vertices, 6*number_of_vertices*sizeof(float));
+    
+    vao.set_attribute_pointer(0, 3, 6, 0);
+    vao.set_attribute_pointer(1, 3, 6, 3);
+
+    delete [] vertices;
+}
