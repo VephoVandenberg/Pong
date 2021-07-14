@@ -1,5 +1,3 @@
-#define GLEW_STATIC
-
 #include "src/shader_handler.h"
 #include "src/vertex_buffer_handler.h"
 #include "src/index_buffer_handler.h"
