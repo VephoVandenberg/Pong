@@ -12,22 +12,24 @@
 class game
 {
 public:
-	game::game(void);
-	game::~game(void);
-	void game::init_window(void);
-	void game::create_player(void);
-	void game::create_ball(float x, float y, float radius,
+	game(void);
+	~game(void);
+	void init_window(void);
+	void create_player(void);
+	void create_ball(float x, float y, float radius,
 			 			   int number_of_segments,
 			 			   float red, float green, float blue);
-	void game::create_shaders(const char *paddle_vertex_shader,
+	void create_shaders(const char *paddle_vertex_shader,
 							  const char *paddle_fragment_shader,
 						      const char *ball_vertex_shader,
 						      const char *ball_fragment_shader);
-	void game::handle_left_paddle(void);
-	void game::handle_right_padle(void);
-	void game::move_ball(void);
-	void game::collide(void);
-	GLFWwindow *game::get_window(void);
+	void handle_left_paddle(void);
+	void handle_right_padle(void);
+	void move_ball(void);
+	void collide_ball(void);
+	void swap_buffers(void);
+	bool is_finished(void);
+	GLFWwindow *get_window(void);
 private:
 	VertexArray  player_array_object;
 	VertexBuffer player_buffer_object;
@@ -39,16 +41,21 @@ private:
 	Shader 		 *player_shader_handler = 0;
 	Shader 		 *ball_shader_handler 	= 0;
 
+	GLFWwindow *window = 0;
+
+	game_entity 	game_scores = {0, 0};
+	ball_movement   ball_move;
+	
 	static paddle_movement left_paddle_move;
 	static paddle_movement right_paddle_move;
 	
-	GLFWwindow *window 			 = 0;
 
-	const int screen_height 	 = 800;
-	const int screen_width		 = 800;
-	const int number_of_segments = 40;
+	const int screen_height 	   = 800;
+	const int screen_width		   = 800;
+	const int number_of_segments   = 40;
+	unsigned int number_of_bounces = 0;
 private:
-	static void game::key_callback(GLFWwindow *window,
+	static void key_callback(GLFWwindow *window,
 				  			   	   int key,
 			  					   int scancode,
 			  					   int action,

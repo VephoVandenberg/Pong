@@ -26,29 +26,6 @@ int main(int argc, char **argv)
 {
 	game game_object;
 	/*
-    if (!glfwInit())
-    {
-	std::cout << "Could not initialize GLFW" << std::endl;
-    }
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-
-    GLFWwindow *window = glfwCreateWindow(screen_width,
-					  screen_height,
-					  "Pong",
-					  0,
-					  0);
-    glfwSetKeyCallback(window, key_callback);
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
-    
-    if (glewInit() != GLEW_OK)
-    {
-	std::cout << "Could not initialize GLEW" << std::endl;	
-    }
-    */
-
-
     float player_paddle[24] =
     {
 	-0.05f, -0.2f, 0.0f, 1.0f, 1.0f, 1.0f, // bottom left
@@ -92,13 +69,20 @@ int main(int argc, char **argv)
 // Creating shaders for paddles and ball as well
     Shader player_shader_handler("shaders/vertex_shader.vert", "shaders/fragment_shader.frag");
     Shader ball_shader_handler("shaders/vertex_shader_ball.vert", "shaders/fragment_shader_ball.frag");
-
-    unsigned int number_of_bounces = 0;
-    while (!glfwWindowShouldClose(game_object.get_window()))
+	*/
+    //unsigned int number_of_bounces = 0;
+    while (!game_object.is_finished())
     {
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
+		game_object.handle_left_paddle();
+		game_object.handle_right_padle();
+		game_object.move_ball();
+		game_object.collide_ball();
+		game_object.swap_buffers();
+		glfwPollEvents();
+		
+		/*
 	// Left player paddle  movement
 		player_shader_handler.use();
 		player_array_object.bind_buffer();
@@ -160,11 +144,11 @@ int main(int argc, char **argv)
 		{
 		    if (ball_move.signX)
 		    {
-			ball_move.movementX += ball_move.velocityX;
+				ball_move.movementX += ball_move.velocityX;
 		    }
 		    else
 		    {
-			ball_move.movementX -= ball_move.velocityX;
+				ball_move.movementX -= ball_move.velocityX;
 		    }
 		}
 		
@@ -174,11 +158,11 @@ int main(int argc, char **argv)
 		    ball_move.signY = false;
 		    if (ball_move.velocityY == 0.02f)
 		    {
-			ball_move.velocityY += 0.04f;
+				ball_move.velocityY += 0.04f;
 		    }
 		    else
 		    {
-			ball_move.velocityY -= 0.04f;
+				ball_move.velocityY -= 0.04f;
 		    }
 		}
 		else if (ball_move.movementY - ball_move.velocityY <= -1.0f)
@@ -187,25 +171,25 @@ int main(int argc, char **argv)
 		    ball_move.signY = true;
 		    if (ball_move.velocityY == 0.02f)
 		    {
-			ball_move.velocityY += 0.04f;
+				ball_move.velocityY += 0.04f;
 		    }
 		    else
 		    {
-			ball_move.velocityY -= 0.04f;
+				ball_move.velocityY -= 0.04f;
 		    }
 		}
 		else
 		{
 		    if (!ball_move.left_center || !ball_move.right_center)
 		    {
-			if (ball_move.signY)
-			{
-			    ball_move.movementY += ball_move.velocityY;
-			}
-			else
-			{
-			    ball_move.movementY -= ball_move.velocityY;
-			}
+				if (ball_move.signY)
+				{
+				    ball_move.movementY += ball_move.velocityY;
+				}
+				else
+				{
+				    ball_move.movementY -= ball_move.velocityY;
+				}
 		    }
 		}
 		
@@ -271,15 +255,13 @@ int main(int argc, char **argv)
 
 		movement = glm::translate(movement, glm::vec3(ball_move.movementX, ball_move.movementY, 0.0f));
 		ball_shader_handler.set_matrix("movement", movement);
-		glDrawArrays(GL_TRIANGLE_FAN, 0, number_of_segments + 2);
-		glfwSwapBuffers(game_object.get_window());
-		glfwPollEvents();
-
+		*/
+		//glDrawArrays(GL_TRIANGLE_FAN, 0, number_of_segments + 2);
     }
     
     return 0;
 }
-
+/*
 void key_callback(GLFWwindow *window,
 		  int key,
 		  int scancode,
@@ -383,3 +365,4 @@ void draw_circle(float x, float y, float radius,
 
     delete [] vertices;
 }
+*/

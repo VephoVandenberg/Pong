@@ -7,6 +7,11 @@ paddle_movement game::right_paddle_move = {0.0f, 0.0f};
 
 game::game(void)
 {
+	ball_move.movementX = 0.2f;
+    ball_move.movementY = -0.1f;
+
+    ball_move.velocityX = 0.02f;
+    ball_move.velocityY = 0.02f;
 
 	init_window();
 	create_player();
@@ -33,10 +38,10 @@ void game::init_window()
 
 
     window = glfwCreateWindow(screen_width,
-					  screen_height,
-					  "Pong",
-					  0,
-					  0);
+							  screen_height,
+				    		  "Pong",
+			    			  0,
+							  0);
     glfwSetKeyCallback(window, key_callback);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -45,6 +50,8 @@ void game::init_window()
     {
     	std::cout << "Could not initialize GLEW" << std::endl;
     }
+
+    std::cout << "OK" << std::endl;
 }
 
 void game::create_player()
@@ -117,30 +124,196 @@ void game::create_shaders(const char *paddle_vertex_shader,
 					      const char *ball_fragment_shader)
 {
 	player_shader_handler = new Shader(paddle_vertex_shader, paddle_fragment_shader);
-	ball_shader_handler = new Shader(ball_vertex_shader, ball_fragment_shader);
+	ball_shader_handler   = new Shader(ball_vertex_shader, ball_fragment_shader);
 }
 
 void game::handle_left_paddle()
 {
-
+	player_shader_handler->use();
+	player_array_object.bind_buffer();
+	glm::mat4 trans_left;
+	if (left_paddle_move.movement + left_paddle_move.movement_dir + 0.2f >= 1.0f)
+	{
+	    left_paddle_move.movement = 1.0f - 0.20f;
+	}
+	else if (left_paddle_move.movement + left_paddle_move.movement_dir - 0.2f <= -1.0f)
+	{
+	    left_paddle_move.movement = -1.0f + 0.20f;
+	}
+	else
+	{
+	    left_paddle_move.movement += left_paddle_move.movement_dir;
+	}
+	trans_left = glm::translate(trans_left, glm::vec3(-0.9f, left_paddle_move.movement, 0.0f));
+	player_shader_handler->set_matrix("transform", trans_left);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void game::handle_right_padle()
+void game::handle_right_padle(void)
 {
-
+	glm::mat4 trans_right;
+	if (right_paddle_move.movement + right_paddle_move.movement_dir + 0.20f >= 1.0f)
+	{
+	    right_paddle_move.movement = 1.0f - 0.20f;
+	}
+	else if (right_paddle_move.movement + right_paddle_move.movement_dir - 0.20f  <= -1.0f)
+	{
+	    right_paddle_move.movement = -1.0f + 0.20f;
+	}
+	else
+	{
+	    right_paddle_move.movement += right_paddle_move.movement_dir;
+	}
+	trans_right = glm::translate(trans_right, glm::vec3(0.95f, right_paddle_move.movement, 0.0f));
+	player_shader_handler->set_matrix("transform", trans_right);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-void game::move_ball()
+void game::move_ball(void)
 {
+	ball_shader_handler->use();
+	ball_array_object.bind_buffer();
+
+	if (ball_move.movementX + ball_move.velocityX >= 1.0f)
+	{
+	    ball_move.movementX = 0.0f;
+	    ball_move.signX = false;
+	    game_scores.left_score++;
+	    std::cout << "Remaining score " << game_scores.left_score << ":" << game_scores.right_score << std::endl;
+	    ball_move.velocityX = 0.02f;
+	}
+	else if (ball_move.movementX - ball_move.velocityX <= -1.0f)
+	{
+	    ball_move.movementX = 0.0f;
+	    ball_move.signX = true;
+	    game_scores.right_score++;
+	    std::cout << "Remaining score " << game_scores.left_score << ":" << game_scores.right_score << std::endl;
+	    ball_move.velocityX = 0.02f;
+	}
+	else
+	{
+	    if (ball_move.signX)
+	    {
+			ball_move.movementX += ball_move.velocityX;
+	    }
+	    else
+	    {
+			ball_move.movementX -= ball_move.velocityX;
+	    }
+	}
+	
+	if (ball_move.movementY + ball_move.velocityY >= 1.0f)
+	{
+	    ball_move.movementY -= ball_move.velocityY;
+	    ball_move.signY = false;
+	    if (ball_move.velocityY == 0.02f)
+	    {
+			ball_move.velocityY += 0.04f;
+	    }
+	    else
+	    {
+			ball_move.velocityY -= 0.04f;
+	    }
+	}
+	else if (ball_move.movementY - ball_move.velocityY <= -1.0f)
+	{
+	    ball_move.movementY += ball_move.velocityY;
+	    ball_move.signY = true;
+	    if (ball_move.velocityY == 0.02f)
+	    {
+			ball_move.velocityY += 0.04f;
+	    }
+	    else
+	    {
+			ball_move.velocityY -= 0.04f;
+	    }
+	}
+	else
+	{
+	    if (!ball_move.left_center || !ball_move.right_center)
+	    {
+			if (ball_move.signY)
+			{
+			    ball_move.movementY += ball_move.velocityY;
+			}
+			else
+			{
+			    ball_move.movementY -= ball_move.velocityY;
+			}
+	    }
+	}
 
 }
 
-void game::collide()
+void game::collide_ball(void)
 {
+	glm::mat4 movement;
 
+	if (ball_move.movementX - 0.04f <= -0.90f &&
+	ball_move.movementX - 0.04f > -0.95f &&
+	ball_move.movementY <= left_paddle_move.movement + 0.2f &&
+	ball_move.movementY >= left_paddle_move.movement - 0.2f)
+	{
+	    if (ball_move.movementY <= left_paddle_move.movement + 0.2f &&
+			ball_move.movementY > left_paddle_move.movement + 0.05f)
+	    {
+			ball_move.signY = true;
+			ball_move.left_center = false;
+	    }
+	    else if (ball_move.movementY >= left_paddle_move.movement - 0.2f && 
+	    		 ball_move.movementY < left_paddle_move.movement - 0.05f)
+	    {
+			ball_move.signY = false;
+			ball_move.left_center = false;
+	    }
+	    else
+	    {
+			ball_move.left_center = true;
+	    }
+	    ball_move.signX = !ball_move.signX;
+	    number_of_bounces++;
+	}
+	else if (ball_move.movementX + 0.04f >= 0.90f &&
+		 	 ball_move.movementX + 0.04f < 0.95f &&
+		 	 ball_move.movementY <= right_paddle_move.movement + 0.2f &&
+		 	 ball_move.movementY >= right_paddle_move.movement - 0.2f)
+	{
+	    if (ball_move.movementY <= right_paddle_move.movement + 0.2f &&
+			ball_move.movementY > right_paddle_move.movement + 0.05f)
+	    {
+			ball_move.signY = true;
+			ball_move.right_center = false;
+	    }
+	    else if (ball_move.movementY >= right_paddle_move.movement - 0.2f &&
+		     	 ball_move.movementY < right_paddle_move.movement - 0.05f)
+	    {
+			ball_move.signY = false;
+			ball_move.right_center = false;
+	    }
+	    else
+	    {
+			ball_move.right_center = true;			       
+	    }
+	    ball_move.signX = !ball_move.signX;
+	    number_of_bounces++;
+	}
+
+	if (ball_move.movementX == 0)
+	{
+	    ball_move.movementY = 0;
+	}
+	if (number_of_bounces == 5)
+	{
+	    number_of_bounces = 0;
+	    ball_move.velocityX += 0.001f;
+	}
+
+	movement = glm::translate(movement, glm::vec3(ball_move.movementX, ball_move.movementY, 0.0f));
+	ball_shader_handler->set_matrix("movement", movement);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, number_of_segments + 2);
 }
 
-GLFWwindow *game::get_window()
+GLFWwindow *game::get_window(void)
 {
 	return window;
 }
@@ -207,3 +380,22 @@ void game::key_callback(GLFWwindow *window,
 		}break;
     }
 }
+
+bool game::is_finished(void)
+{
+	if (window)
+	{
+		return glfwWindowShouldClose(window);
+	}
+
+	return false;
+}
+
+void game::swap_buffers(void)
+{
+	if (window)
+	{
+		glfwSwapBuffers(window);
+	}
+}
+
