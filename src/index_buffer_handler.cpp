@@ -17,16 +17,16 @@ IndexBuffer::IndexBuffer(void)
 
 void IndexBuffer::bind_buffer(void) const
 {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_ID);
 }
 
 void IndexBuffer::unbind_buffer(void) const
 {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_ID);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void IndexBuffer::write_data(const void *data, const unsigned int count)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_ID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, count_indices, data, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, count, data, GL_STATIC_DRAW);
 }

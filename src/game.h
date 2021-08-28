@@ -12,9 +12,8 @@
 class game
 {
 public:
-	game(void);
+	game(GLFWwindow *window_arg);
 	~game(void);
-	void init_window(void);
 	void create_player(void);
 	void create_ball(float x, float y, float radius,
 			 			   int number_of_segments,
@@ -27,19 +26,17 @@ public:
 	void handle_right_padle(void);
 	void move_ball(void);
 	void collide_ball(void);
-	void swap_buffers(void);
-	bool is_finished(void);
 	GLFWwindow *get_window(void);
 private:
 	VertexArray  player_array_object;
 	VertexBuffer player_buffer_object;
 	IndexBuffer  player_index_object;
+	Shader 		 *player_shader_handler = 0;
 
 	VertexArray  ball_array_object;
 	VertexBuffer ball_buffer_object;
-
-	Shader 		 *player_shader_handler = 0;
-	Shader 		 *ball_shader_handler 	= 0;
+	Shader    *ball_shader_handler = 0;
+	int number_of_segments = 0;
 
 	GLFWwindow *window = 0;
 
@@ -49,10 +46,6 @@ private:
 	static paddle_movement left_paddle_move;
 	static paddle_movement right_paddle_move;
 	
-
-	const int screen_height 	   = 800;
-	const int screen_width		   = 800;
-	const int number_of_segments   = 40;
 	unsigned int number_of_bounces = 0;
 private:
 	static void key_callback(GLFWwindow *window,
@@ -60,6 +53,7 @@ private:
 			  					   int scancode,
 			  					   int action,
 			  					   int mods);
+	
 };
 
 #endif GAME_H

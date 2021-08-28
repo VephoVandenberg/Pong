@@ -5,7 +5,7 @@
 paddle_movement game::left_paddle_move  = {0.0f, 0.0f};
 paddle_movement game::right_paddle_move = {0.0f, 0.0f};
 
-game::game(void)
+game::game(GLFWwindow *window_arg)
 {
 	ball_move.movementX = 0.2f;
     ball_move.movementY = -0.1f;
@@ -13,45 +13,16 @@ game::game(void)
     ball_move.velocityX = 0.02f;
     ball_move.velocityY = 0.02f;
 
-	init_window();
-	create_player();
-	create_ball(0.0f, 0.0f, 0.04f, number_of_segments,
-				1.0f, 1.0f, 1.0f);
-	create_shaders("shaders/vertex_shader.vert", 
- 					"shaders/fragment_shader.frag",
-    				"shaders/vertex_shader_ball.vert",
-    				"shaders/fragment_shader_ball.frag");
+	if (window_arg)
+	{
+		window = window_arg;
+	}
+	glfwSetKeyCallback(window, key_callback);
 }
 
 game::~game(void)
 {
 
-}
-
-void game::init_window()
-{
-	if (!glfwInit())
-    {
-    	std::cout << "Could not initialize GLFW" << std::endl;
-    }
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-
-    window = glfwCreateWindow(screen_width,
-							  screen_height,
-				    		  "Pong",
-			    			  0,
-							  0);
-    glfwSetKeyCallback(window, key_callback);
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
-    
-    if (glewInit() != GLEW_OK)
-    {
-    	std::cout << "Could not initialize GLEW" << std::endl;
-    }
-
-    std::cout << "OK" << std::endl;
 }
 
 void game::create_player()
@@ -68,20 +39,21 @@ void game::create_player()
     {
 		0, 1, 2, // first triangle
 		1, 2, 3  // second triangle 
-   	};
-
-    player_array_object.bind_buffer();
+    };
+ 	
+ 	player_array_object.bind_buffer();
     player_buffer_object.write_data(player_paddle, sizeof(player_paddle));
     player_index_object.write_data(player_indices, sizeof(player_indices));
-
     player_array_object.set_attribute_pointer(0, 3, 6, 0); // vertex coords
     player_array_object.set_attribute_pointer(1, 3, 6, 3); // color
+
 }
 
 void game::create_ball(float x, float y, float radius,
-		 			   int number_of_segments,
+		 			   int number_of_segs,
 		 			   float red, float green, float blue)
 {
+	number_of_segments = number_of_segs;
 	int number_of_vertices = 3 + number_of_segments - 1;
     float twice_pi = 2.0f * M_PI;
 
@@ -124,7 +96,7 @@ void game::create_shaders(const char *paddle_vertex_shader,
 					      const char *ball_fragment_shader)
 {
 	player_shader_handler = new Shader(paddle_vertex_shader, paddle_fragment_shader);
-	ball_shader_handler   = new Shader(ball_vertex_shader, ball_fragment_shader);
+	ball_shader_handler	  = new Shader(ball_vertex_shader, ball_fragment_shader);
 }
 
 void game::handle_left_paddle()
@@ -145,12 +117,14 @@ void game::handle_left_paddle()
 	    left_paddle_move.movement += left_paddle_move.movement_dir;
 	}
 	trans_left = glm::translate(trans_left, glm::vec3(-0.9f, left_paddle_move.movement, 0.0f));
-	player_shader_handler->set_matrix("transform", trans_left);
+	       player_shader_handler->set_matrix("transform", trans_left);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void game::handle_right_padle(void)
 {
+	player_shader_handler->use();
+	player_array_object.bind_buffer();
 	glm::mat4 trans_right;
 	if (right_paddle_move.movement + right_paddle_move.movement_dir + 0.20f >= 1.0f)
 	{
@@ -200,8 +174,7 @@ void game::move_ball(void)
 	    {
 			ball_move.movementX -= ball_move.velocityX;
 	    }
-	}
-	
+	}	
 	if (ball_move.movementY + ball_move.velocityY >= 1.0f)
 	{
 	    ball_move.movementY -= ball_move.velocityY;
@@ -242,7 +215,6 @@ void game::move_ball(void)
 			}
 	    }
 	}
-
 }
 
 void game::collide_ball(void)
@@ -250,54 +222,53 @@ void game::collide_ball(void)
 	glm::mat4 movement;
 
 	if (ball_move.movementX - 0.04f <= -0.90f &&
-	ball_move.movementX - 0.04f > -0.95f &&
-	ball_move.movementY <= left_paddle_move.movement + 0.2f &&
-	ball_move.movementY >= left_paddle_move.movement - 0.2f)
+	    ball_move.movementX - 0.04f > -0.95f &&
+	    ball_move.movementY <= left_paddle_move.movement + 0.2f &&
+	    ball_move.movementY >= left_paddle_move.movement - 0.2f)
 	{
 	    if (ball_move.movementY <= left_paddle_move.movement + 0.2f &&
-			ball_move.movementY > left_paddle_move.movement + 0.05f)
+		ball_move.movementY > left_paddle_move.movement + 0.05f)
 	    {
-			ball_move.signY = true;
-			ball_move.left_center = false;
+		ball_move.signY = true;
+		ball_move.left_center = false;
 	    }
-	    else if (ball_move.movementY >= left_paddle_move.movement - 0.2f && 
-	    		 ball_move.movementY < left_paddle_move.movement - 0.05f)
+	    else if (ball_move.movementY >= left_paddle_move.movement - 0.2f
+		     && ball_move.movementY < left_paddle_move.movement - 0.05f)
 	    {
-			ball_move.signY = false;
-			ball_move.left_center = false;
+		ball_move.signY = false;
+		ball_move.left_center = false;
 	    }
 	    else
 	    {
-			ball_move.left_center = true;
+		ball_move.left_center = true;
 	    }
 	    ball_move.signX = !ball_move.signX;
 	    number_of_bounces++;
 	}
 	else if (ball_move.movementX + 0.04f >= 0.90f &&
-		 	 ball_move.movementX + 0.04f < 0.95f &&
-		 	 ball_move.movementY <= right_paddle_move.movement + 0.2f &&
-		 	 ball_move.movementY >= right_paddle_move.movement - 0.2f)
+		 ball_move.movementX + 0.04f < 0.95f &&
+		 ball_move.movementY <= right_paddle_move.movement + 0.2f &&
+		 ball_move.movementY >= right_paddle_move.movement - 0.2f)
 	{
 	    if (ball_move.movementY <= right_paddle_move.movement + 0.2f &&
-			ball_move.movementY > right_paddle_move.movement + 0.05f)
+		ball_move.movementY > right_paddle_move.movement + 0.05f)
 	    {
-			ball_move.signY = true;
-			ball_move.right_center = false;
+		ball_move.signY = true;
+		ball_move.right_center = false;
 	    }
 	    else if (ball_move.movementY >= right_paddle_move.movement - 0.2f &&
-		     	 ball_move.movementY < right_paddle_move.movement - 0.05f)
+		     ball_move.movementY < right_paddle_move.movement - 0.05f)
 	    {
-			ball_move.signY = false;
-			ball_move.right_center = false;
+		ball_move.signY = false;
+		ball_move.right_center = false;
 	    }
 	    else
 	    {
-			ball_move.right_center = true;			       
+		ball_move.right_center = true;			       
 	    }
 	    ball_move.signX = !ball_move.signX;
 	    number_of_bounces++;
 	}
-
 	if (ball_move.movementX == 0)
 	{
 	    ball_move.movementY = 0;
@@ -307,9 +278,9 @@ void game::collide_ball(void)
 	    number_of_bounces = 0;
 	    ball_move.velocityX += 0.001f;
 	}
-
 	movement = glm::translate(movement, glm::vec3(ball_move.movementX, ball_move.movementY, 0.0f));
 	ball_shader_handler->set_matrix("movement", movement);
+	
 	glDrawArrays(GL_TRIANGLE_FAN, 0, number_of_segments + 2);
 }
 
@@ -324,78 +295,58 @@ void game::key_callback(GLFWwindow *window,
 		  				int action,
 		  				int mods)
 {
-    switch(key)
+   switch(key)
     {
-		case GLFW_KEY_W:
-		{
-		    if (action == GLFW_PRESS)
-		    {
-				left_paddle_move.movement_dir += 0.1f;
-		    }
-		    else if (action == GLFW_RELEASE)
-		    {
-				left_paddle_move.movement_dir -= 0.1f;
-		    }
-		}break;
-
-		case GLFW_KEY_S:
-		{
-		    if (action == GLFW_PRESS)
-		    {
-		        left_paddle_move.movement_dir -= 0.1f;       
-		    }
-		    else if (action == GLFW_RELEASE)
-		    {
-		        left_paddle_move.movement_dir += 0.1f;
-		    }
-		}break;
-
-		case GLFW_KEY_UP:
-		{
-		    if (action == GLFW_PRESS)
-		    {
-				right_paddle_move.movement_dir += 0.1f;
-		    }
-		    else if (action == GLFW_RELEASE)
-		    {
-		        right_paddle_move.movement_dir -= 0.1f;
-		    }
-		}break;
-
-		case GLFW_KEY_DOWN:
-		{
-		    if (action == GLFW_PRESS)
-		    {
-		        right_paddle_move.movement_dir -= 0.1f;
-		    }
-		    else if (action == GLFW_RELEASE)
-		    {
-		        right_paddle_move.movement_dir += 0.1f;
-		    }
-		}break;
-
-		default:
-		{
-
-		}break;
-    }
-}
-
-bool game::is_finished(void)
-{
-	if (window)
+	case GLFW_KEY_W:
 	{
-		return glfwWindowShouldClose(window);
-	}
+	    if (action == GLFW_PRESS)
+	    {
+		left_paddle_move.movement_dir += 0.1f;
+	    }
+	    else if (action == GLFW_RELEASE)
+	    {
+		left_paddle_move.movement_dir -= 0.1f;
+	    }
+	}break;
 
-	return false;
-}
-
-void game::swap_buffers(void)
-{
-	if (window)
+	case GLFW_KEY_S:
 	{
-		glfwSwapBuffers(window);
-	}
-}
+	    if (action == GLFW_PRESS)
+	    {
+	        left_paddle_move.movement_dir -= 0.1f;       
+	    }
+	    else if (action == GLFW_RELEASE)
+	    {
+	        left_paddle_move.movement_dir += 0.1f;
+	    }
+	}break;
 
+	case GLFW_KEY_UP:
+	{
+	    if (action == GLFW_PRESS)
+	    {
+		right_paddle_move.movement_dir += 0.1f;
+	    }
+	    else if (action == GLFW_RELEASE)
+	    {
+	        right_paddle_move.movement_dir -= 0.1f;
+	    }
+	}break;
+
+	case GLFW_KEY_DOWN:
+	{
+	    if (action == GLFW_PRESS)
+	    {
+	        right_paddle_move.movement_dir -= 0.1f;
+	    }
+	    else if (action == GLFW_RELEASE)
+	    {
+	        right_paddle_move.movement_dir += 0.1f;
+	    }
+	}break;
+
+	default:
+	{
+	}break;
+    }  
+}

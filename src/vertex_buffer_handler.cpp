@@ -11,18 +11,19 @@ VertexBuffer::VertexBuffer(const void *data, const unsigned int size)
 
 VertexBuffer::VertexBuffer(void)
 {
-    
+    glGenBuffers(1, &vertex_buffer_ID);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_ID);
 }
 
 
 void VertexBuffer::bind_buffer(void) const
 {
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_ID);
 }
 
 void VertexBuffer::unbind_buffer(void) const
 {
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_ID);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void VertexBuffer::write_data(const void *data, const unsigned int size)
