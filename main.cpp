@@ -12,11 +12,7 @@ int main(int argc, char **argv)
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     
-    GLFWwindow *window = glfwCreateWindow(screen_width,
-							  screen_height,
-				    		  "Pong",
-			    			  0,
-							  0);
+    GLFWwindow *window = glfwCreateWindow(screen_width, screen_height, "Pong", 0, 0);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
     
@@ -25,9 +21,7 @@ int main(int argc, char **argv)
     	std::cout << "Could not initialize GLEW" << std::endl;
     }	
 	game game_object(window);
-    
     game_object.create_player();
-    std::cout << "OK";
     game_object.create_ball(0.0f, 0.0f, 0.04f, 40,
 							1.0f, 1.0f, 1.0f);
     game_object.create_shaders("shaders/vertex_shader.vert", "shaders/fragment_shader.frag",
