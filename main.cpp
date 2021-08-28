@@ -23,9 +23,9 @@ int main(int argc, char **argv)
 	game game_object(window);
     game_object.create_player();
     game_object.create_ball(0.0f, 0.0f, 0.04f, 40,
-							1.0f, 1.0f, 1.0f);
+			1.0f, 1.0f, 1.0f);
     game_object.create_shaders("shaders/vertex_shader.vert", "shaders/fragment_shader.frag",
-    							"shaders/vertex_shader_ball.vert", "shaders/fragment_shader_ball.frag");
+    		"shaders/vertex_shader_ball.vert", "shaders/fragment_shader_ball.frag");
 
     while (!glfwWindowShouldClose(game_object.get_window()))
     {
