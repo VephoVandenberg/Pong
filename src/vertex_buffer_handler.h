@@ -14,6 +14,8 @@ public:
     void write_data(const void *data, const unsigned int size);
 private:
     unsigned int vertex_buffer_ID;
+private:
+	VertexBuffer(const VertexBuffer& vertex_buffer_handler);
 };
 
 #endif

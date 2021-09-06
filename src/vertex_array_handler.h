@@ -16,6 +16,8 @@ public:
 			       unsigned int location_in_bytes);
 private:
     unsigned int vertex_array_ID;
+private:
+	VertexArray(const VertexArray& vertex_array_buffer);
 };
 
 #endif

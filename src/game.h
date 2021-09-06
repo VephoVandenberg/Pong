@@ -53,6 +53,8 @@ private:
 			  					   int scancode,
 			  					   int action,
 			  					   int mods);
+
+	game(const game& game_instance);
 	
 };
 

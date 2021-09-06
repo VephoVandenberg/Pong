@@ -15,6 +15,8 @@ public:
     void unbind_texture(void) const;
 private:
     unsigned int texture_ID;
+private:
+	TextureHandler(const TextureHandler& texture_handler_instance);
 };
 
 #endif

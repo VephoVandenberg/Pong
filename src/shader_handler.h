@@ -23,6 +23,8 @@ public:
     void set_matrix(const std::string& name, glm::mat4 matrix) const;
 private:
     unsigned int shader_ID;
+private:
+	Shader(const Shader& shader_instance);
 };
 
 #endif

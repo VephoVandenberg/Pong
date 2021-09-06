@@ -14,6 +14,8 @@ public:
     void write_data(const void *data, const unsigned int count);
 private:
     unsigned int index_buffer_ID;
+private:
+	IndexBuffer(const IndexBuffer& buffer_instance);
 };
 
 #endif
